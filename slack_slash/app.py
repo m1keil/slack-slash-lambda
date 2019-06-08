@@ -2,9 +2,9 @@ import os
 import hmac
 from urllib.parse import parse_qs
 from functools import partial
-import json
 
 import requests
+from requests.exceptions import RequestException
 
 
 def lambda_handler(event, context):
@@ -51,9 +51,11 @@ def get_sessions(callback, secret):
     """
     try:
         r = requests.get(f"https://sessionize.com/api/v2/{secret}/view/sessions")
-    except Exception as e:
-        print("sessionize didn't respond correctly")
-        raise e
+        r.raise_for_status()
+    except RequestException as e:
+        print("error: ", e)
+        callback("error while attempting to reach sessionize.com")
+        return
 
     sessions = r.json()[0]["sessions"]
     content = f":star2: Number of talk submissions: *{len(sessions)}*\n"
@@ -79,12 +81,14 @@ def get_tickets(callback, secret, org, slug):
                 "Authorization": f"Token token={secret}",
             },
         )
-    except Exception as e:
-        print("ti.to chocked")
-        raise e
+        r.raise_for_status()
+    except RequestException as e:
+        print("error: ", e)
+        callback("error while attempting to reach ti.to")
+        return
 
     tickets = r.json()["tickets"]
-    content = f"tickets sold: {len(tickets)}"
+    content = f"tickets sold: *{len(tickets)}*"
 
     callback(content)
 
@@ -97,17 +101,16 @@ def send(url, content):
 
     try:
         r = requests.post(url, json=payload)
-    except Exception as e:
-        print("slack didn't like that")
+        r.raise_for_status()
+    except RequestException as e:
+        print("error while sending callback to slack")
         raise e
-
-    r.raise_for_status()
 
 
 def verify(*, key, version, timestamp, payload, signature):
     """
-    verify slack message.
-    info: https://api.slack.com/docs/verifying-requests-from-slack#a_recipe_for_security
+    verify slack message. see more:
+    https://api.slack.com/docs/verifying-requests-from-slack#a_recipe_for_security
     """
     msg = f"{version}:{timestamp}:{payload}".encode()
     h = hmac.new(key, msg, "sha256")
