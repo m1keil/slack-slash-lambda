@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: lambdas for slack
+
+Parameters:
+  SessioniseKey:
+    Type: String
+    NoEcho: true
+  TitoKey:
+    Type: String
+    NoEcho: true
+  SlackKey:
+    Type: String
+    NoEcho: true
+
+Resources:
+  APIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prd
+      DefinitionUri: ./swagger.yaml
+
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SlackSlash
+      CodeUri: slack_slash/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 5
+      Environment:
+        Variables:
+          SESSIONISE_KEY: !Ref SessioniseKey
+          TITO_ORG: devopsaustralia
+          TITO_EVENT: sydney-2019
+          TITO_KEY: !Ref TitoKey
+          SLACK_KEY: !Ref SlackKey
+
+      Events:
+        PostPetApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "APIGateway"
+            Path: /
+            Method: POST
+      Policies:
+      - AWSLambdaBasicExecutionRole
+
+Outputs:
+  Api:
+    Description: "API Gateway endpoint URL for prd stage for Hello World function"
+    Value: !Sub "https://${APIGateway}.execute-api.${AWS::Region}.amazonaws.com/prd/"
+  Function:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt Function.Arn
+
