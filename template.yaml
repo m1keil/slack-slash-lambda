@@ -27,7 +27,7 @@ Resources:
       CodeUri: slack_slash/
       Handler: app.lambda_handler
       Runtime: python3.7
-      Timeout: 5
+      Timeout: 30
       Environment:
         Variables:
           SESSIONISE_KEY: !Ref SessioniseKey
