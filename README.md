@@ -4,25 +4,29 @@ This repo holds code and configuration for lambda based [slash commands](https:/
 # Pre-Requirements
 To deploy this you will need the following
 
-1. AWS credentails
-2. aws cli
-3. aws-sam-cli
-4. S3 bucket
-5. Access in slack to create your own App
+1. AWS credentails and access to create Cloudformation stacks, Lambda functions,
+Api Gateways, IAM policies and S3 buckets
+1. S3 bucket
+1. `awscli`
+1. `aws-sam-cli`
+1. Access in Slack to create your own App
 
 # Secrets
 Secrets are passed to the lambda via environment variables. These are set by CloudFormation
 via parameters. Add secrets to `envars.sample.json` file and rename it to `envars.json`.
 
-The keys:
-* SESSIONISE_KEY: the API id you can generate in sessionize.com under API/Embed section
-* TITO_KEY: v3 API key generated in the user profile
-* SLACK_KEY: Slack's app signing secret key generated in the App credentails section
+## The keys:
+* **SESSIONISE_KEY**: the API id you can generate in sessionize.com under API/Embed section
+* **TITO_KEY**: v3 API key generated in the user profile
+* **SLACK_KEY**: Slack's app signing secret key generated in the App credentails section
 
 # Local testing
 Testing behaviour of the lambda can be done locally:
 
     $ sam local invoke -n envars.json -e event_cfp.json
+
+`sam local start-api` won't work because currently local API Gateway doesn't support
+mapping templates.
 
 # Build and Deploy
 First build and package:
@@ -41,5 +45,5 @@ If deployed successfully, you can list outputs with:
 # Configuring Slack
 
 Create a new App in Slack. Under the Slash Command section add your commands.
-Set `Request URL` to point at the `OutputValue` of *Api* `OutputKey`.
+Set `Request URL` to point at the `OutputValue` of **Api** `OutputKey`.
 
