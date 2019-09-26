@@ -2,6 +2,7 @@ import os
 import hmac
 from urllib.parse import parse_qs
 from functools import partial
+from itertools import groupby
 
 import requests
 from requests.exceptions import RequestException
@@ -88,7 +89,13 @@ def get_tickets(callback, secret, org, slug):
         return
 
     tickets = r.json()["tickets"]
-    content = f"tickets sold: *{len(tickets)}*"
+    tickets = sorted(tickets, key=lambda x: x["release_title"])
+    groups = groupby(tickets, lambda x: x["release_title"])
+
+    stats = [f"{k}: {len(list(g))}" for k, g in groups]
+    content = f"Total sold: {len(tickets)}"
+    content += "\n"
+    content += "\n".join(stats)
 
     callback(content)
 
