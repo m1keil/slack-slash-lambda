@@ -74,21 +74,40 @@ def get_tickets(callback, secret, org, slug):
     """
     get number of tickets sold
     """
+    def paginate():
+        tickets = []
+        curr = 1
+
+        while True:
+            r = requests.get(
+                f"https://api.tito.io/v3/{org}/{slug}/tickets?page={curr}",
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": f"Token token={secret}",
+                },
+            )
+            r.raise_for_status()
+
+            resp = r.json()
+            tickets.extend(resp["tickets"])
+
+            total = resp["meta"]["total_pages"]
+            if curr == total:
+                break
+            curr += 1
+
+        return tickets
+
+
     try:
-        r = requests.get(
-            f"https://api.tito.io/v3/{org}/{slug}/tickets",
-            headers={
-                "Accept": "application/json",
-                "Authorization": f"Token token={secret}",
-            },
-        )
-        r.raise_for_status()
+        tickets = paginate()
     except RequestException as e:
         print("error: ", e)
         callback("error while attempting to reach ti.to")
         return
 
-    tickets = r.json()["tickets"]
+    print(tickets)
+
     tickets = sorted(tickets, key=lambda x: x["release_title"])
     groups = groupby(tickets, lambda x: x["release_title"])
 
