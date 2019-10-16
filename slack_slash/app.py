@@ -101,11 +101,11 @@ def get_tickets(callback, secret, org, slug):
 
     try:
         tickets = paginate()
-
+    except RequestException as e:
+        print("error: ", e)
         callback("error while attempting to reach ti.to")
         return
 
-    tickets = r.json()["tickets"]
     tickets = sorted(tickets, key=lambda x: x["release_title"])
     groups = groupby(tickets, lambda x: x["release_title"])
 
