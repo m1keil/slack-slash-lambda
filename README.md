@@ -1,11 +1,8 @@
 # slack-slash-lambda
-This repo holds code and configuration for lambda based [slash commands](https://api.slack.com/slash-commands) for Slack.
+This repo holds code and configuration to create a lambda based [slash commands](https://api.slack.com/slash-commands) for Slack. The processing of the commands is done asynchronously.
 
 ## Details for geeks
-Slack allows your API to respond in sync or async manner. For synchronus calls the
-timeout is 3 seconds. For any work that might take longer than that it is recommended to use callback url while responding with `200 OK` to the initial call.
-The configuration in thie repo configures API gateway to run the Lambdas asynchronusly.
-
+Slack allows support both sync and async API. For synchronus calls the timeout is 3 seconds. For longer processing periods, async API is the way to go. This repository configured to respond in async manner. It is done by responding with `200 OK` to the initial call and passing the callback url to the handler function.
 
 # Pre-Requirements
 To deploy this you will need the following
